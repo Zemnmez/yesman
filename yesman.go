@@ -145,6 +145,8 @@ func Forward(v url.Values) (ov url.Values, err error) {
 
 	ov = v
 
+	ov.Set("openid.mode", "id_res")
+
 	ov.Set("openid.signed", "mode,identity,return_to")
 
 	var (
