@@ -128,7 +128,15 @@ func ForwardHandler(rw http.ResponseWriter, rq *http.Request) {
 	rw.WriteHeader(302)
 }
 
-var toSign = []string{"mode", "identity", "assoc_handle", "return_to"}
+var toSign = []string{
+	"mode",
+	"identity",
+	"assoc_handle",
+	"return_to",
+	"claimed_id",
+	"signed",
+	"return_to",
+}
 
 func Forward(v url.Values) (ov url.Values, err error) {
 	//just say yes.
