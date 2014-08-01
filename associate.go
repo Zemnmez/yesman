@@ -6,11 +6,14 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 	"net/url"
 	"sync/atomic"
 	"time"
 )
+
+const debug = false
 
 var assocHandleCounter uint64
 
@@ -102,7 +105,7 @@ type Association struct {
 	ForeignKey *big.Int
 	Expiry     time.Time
 	DhKey      *big.Int
-	MacSecret  [10]byte
+	MacSecret  [20]byte
 }
 
 func NewAssociation(theirKey *big.Int) (a Association, err error) {
@@ -179,9 +182,32 @@ func (a Association) EncMacKey() (s string, err error) {
 		return
 	}
 
+	if debug {
+		log.Printf(
+			"EncMacKey: wrote key bytes for %s",
+			a.DhKey,
+		)
+	}
+
 	//sha1 is 20 bytes just like our key
 	bt := make([]byte, 0, 20)
 	bt = h.Sum(bt)
+
+	if debug {
+		log.Printf(
+			"EncMacKey: key bytes (%v) %+q",
+			len(bt),
+			bt,
+		)
+	}
+
+	if debug {
+		log.Printf(
+			"EncMacKey: secret: (%v) %+q",
+			len(a.MacSecret),
+			a.MacSecret,
+		)
+	}
 
 	//xor with our key
 	for i, v := range bt {
