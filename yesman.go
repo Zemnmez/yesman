@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"math/big"
@@ -56,16 +57,10 @@ func Login(rw http.ResponseWriter, rq *http.Request) {
 		fmt.Fprintf(rw, "%s", kv)
 
 	case "checkid_setup":
-		values, err := Setup(rq.Form)
+		err := SetupHandler(rw, rq)
 		if err != nil {
 			fmt.Fprintln(rw, err)
 		}
-
-		rw.Header().Set(
-			"Location",
-			rq.Form.Get("openid.return_to")+
-				"?"+values.Encode(),
-		)
 	case "check_authentication":
 		kv := KeyValue{
 			"openid.mode": "id_res",
@@ -76,7 +71,54 @@ func Login(rw http.ResponseWriter, rq *http.Request) {
 	}
 }
 
-func Setup(v url.Values) (ov url.Values, err error) {
+func SetupHandler(rw http.ResponseWriter, rq *http.Request) (err error) {
+	rw.Header().Set("Content-Type", "text/html")
+	s := "<!DOCTYPE HTML><head><title>yesman</title></head><body><h1>Who would you like to be today?</h1><form " +
+		"action=/forward method=post " +
+		"id=f>"
+
+	if err = rq.ParseForm(); err != nil {
+		return
+	}
+
+	for k, vl := range rq.Form {
+		for _, v := range vl {
+			s += "<input name='" + html.EscapeString(k) + " value='" + html.EscapeString(v) + "'>"
+		}
+	}
+
+	s += "</form>" +
+		"</body>"
+
+	if _, err = io.Copy(rw, strings.NewReader(s)); err != nil {
+		return
+	}
+
+	return
+}
+
+func ForwardHandler(rw http.ResponseWriter, rq *http.Request) {
+	err := rq.ParseForm()
+	if err != nil {
+		fmt.Fprintf(rw, "%s", err)
+		return
+	}
+
+	values, err := Forward(rq.Form)
+
+	if err != nil {
+		fmt.Fprintf(rw, "%s", err)
+		return
+	}
+
+	rw.Header().Set(
+		"Location",
+		rq.Form.Get("openid.return_to")+
+			"?"+values.Encode(),
+	)
+}
+
+func Forward(v url.Values) (ov url.Values, err error) {
 	//just say yes.
 
 	if !strings.HasPrefix(v.Get("openid.return_to"), "http") {
@@ -148,7 +190,10 @@ type Server struct {
 	Openid http.Handler
 	// /login endpoint
 	Login http.Handler
-	m     *http.ServeMux
+
+	//forwarding endpoint
+	Forward http.Handler
+	m       *http.ServeMux
 }
 
 func (s Server) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
