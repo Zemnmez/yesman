@@ -53,7 +53,7 @@ func Associate(f url.Values) (kv KeyValue, err error) {
 	}
 
 	var (
-		pubkey    *big.Int
+		pubkey    *big.Int = new(big.Int)
 		pubKeyStr string
 	)
 
