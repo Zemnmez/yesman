@@ -180,7 +180,7 @@ func (a Association) EncMacKey() (s string, err error) {
 	}
 
 	//sha1 is 20 bytes just like our key
-	bt := make([]byte, 20)
+	bt := make([]byte, 0, 20)
 	bt = h.Sum(bt)
 
 	//xor with our key
