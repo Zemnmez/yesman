@@ -145,6 +145,8 @@ func Forward(v url.Values) (ov url.Values, err error) {
 		if err != nil {
 			return
 		}
+	} else {
+		v.Set("openid.assoc_handle", "1")
 	}
 
 	ov = v
