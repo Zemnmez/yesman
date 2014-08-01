@@ -128,16 +128,6 @@ func ForwardHandler(rw http.ResponseWriter, rq *http.Request) {
 	rw.WriteHeader(302)
 }
 
-var toSign = []string{
-	"mode",
-	"identity",
-	"assoc_handle",
-	"return_to",
-	"claimed_id",
-	"signed",
-	"return_to",
-}
-
 func Forward(v url.Values) (ov url.Values, err error) {
 	//just say yes.
 
@@ -164,7 +154,12 @@ func Forward(v url.Values) (ov url.Values, err error) {
 	//:¬)
 	ov.Set("openid.assoc_handle", "1")
 
-	ov.Set("openid.signed", strings.Join(toSign, ","))
+	var keys []string = make([]string, 0, len(ov))
+	for k, _ := range ov {
+		keys = append(keys, k)
+	}
+
+	ov.Set("openid.signed", strings.Join(keys, ","))
 
 	var (
 		a  Association
@@ -179,10 +174,15 @@ func Forward(v url.Values) (ov url.Values, err error) {
 		return
 	}
 
-	var sigVl = make(KeyValue, len(toSign))
+	var sigVl = make(KeyValue, len(ov))
 
-	for _, v := range toSign {
-		sigVl[v] = ov.Get("openid." + v)
+	for k, v := range ov {
+		if !strings.HasPrefix(k, "openid.") {
+			continue
+		}
+
+		n := strings.TrimPrefix(k, "openid.")
+		sigVl[n] = ov.Get(v[0])
 	}
 
 	var mac = make([]byte, 20)
