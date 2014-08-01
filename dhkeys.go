@@ -17,16 +17,14 @@ const defaultModStr = "155172898181473697471232257763715539915724801966915404479
 //the default gen 'g value' for key exchange
 const defaultGen = 2
 
-
 func init() {
 	rr := rand.New(rand.NewSource(1337))
 	defaultg = new(big.Int).SetInt64(defaultGen)
 	var ok bool
-	if defaultp, ok = new(big.Int).SetString(defaultModStr, 10); !ok{
+	if defaultp, ok = new(big.Int).SetString(defaultModStr, 10); !ok {
 		panic("Unable to parse mod string")
 	}
 
 	prvKey = new(big.Int).Rand(rr, defaultg)
 	pubKey = new(big.Int).Exp(defaultg, prvKey, defaultp)
 }
-

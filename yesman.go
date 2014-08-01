@@ -17,7 +17,6 @@ import (
 	"strings"
 )
 
-
 type XRDSXml struct {
 	//for pentesting XSS exploits,
 	//defaults to /login.
@@ -44,7 +43,6 @@ func (x XRDSXml) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 	)
 }
 
-
 func Login(rw http.ResponseWriter, rq *http.Request) {
 	rq.ParseForm()
 	switch rq.Form.Get("openid.mode") {
@@ -66,12 +64,12 @@ func Login(rw http.ResponseWriter, rq *http.Request) {
 		rw.Header().Set(
 			"Location",
 			rq.Form.Get("openid.return_to")+
-				"?" + values.Encode(),
+				"?"+values.Encode(),
 		)
 	case "check_authentication":
-		kv := KeyValue {
-			"openid.mode":"id_res",
-			"is_valid":"true",
+		kv := KeyValue{
+			"openid.mode": "id_res",
+			"is_valid":    "true",
 		}
 
 		fmt.Fprintf(rw, "%s", kv)
@@ -92,17 +90,14 @@ func Setup(v url.Values) (ov url.Values, err error) {
 		if err != nil {
 			return
 		}
-	} else {
-		err = errors.New("Missing assoc_handle.")
-		return
 	}
 
 	ov = v
 
 	ov.Set("openid.signed", "mode,identity,return_to")
 
-	var(
-		a Association
+	var (
+		a  Association
 		ok bool
 	)
 
@@ -121,7 +116,7 @@ func Setup(v url.Values) (ov url.Values, err error) {
 	sigVl["return_to"] = ov.Get("return_to")
 
 	var mac = make([]byte, 20)
-	macWriter :=  hmac.New(sha1.New, a.MacSecret[:])
+	macWriter := hmac.New(sha1.New, a.MacSecret[:])
 	_, err = macWriter.Write(
 		[]byte(sigVl.String()),
 	)
@@ -138,15 +133,12 @@ func Setup(v url.Values) (ov url.Values, err error) {
 
 var one = big.NewInt(1)
 
-
-
-
 type KeyValue map[string]string
 
-func(k KeyValue) String() string {
+func (k KeyValue) String() string {
 	var s = make([]string, 0, len(k))
 	for k, v := range k {
-		s = append(s, k + ":"+v)
+		s = append(s, k+":"+v)
 	}
 	return strings.Join(s, "\n")
 }
@@ -169,4 +161,3 @@ func (s Server) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 		s.Login.ServeHTTP(rw, rq)
 	}
 }
-

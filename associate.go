@@ -20,31 +20,40 @@ func newAssocHandle() uint64 {
 
 var associations = make(map[uint64]Association)
 
+func init() {
+	a := Association{}
+	_, err := rand.Read(a.MacSecret[:])
+	if err != nil {
+		panic(err)
+	}
+
+	associations[0] = a
+}
 
 func Associate(f url.Values) (kv KeyValue, err error) {
 
 	if t := f.Get("openid.assoc_type"); t != "" && t != "HMAC-SHA1" {
-		err =  errors.New("Unsupported assoc_type.")
+		err = errors.New("Unsupported assoc_type.")
 		return
 	}
 
 	if t := f.Get("openid.session_type"); t != "" && t != "DH-SHA1" {
-		err =  errors.New("Unsupported session_type.")
+		err = errors.New("Unsupported session_type.")
 		return
 	}
 
 	if m := f.Get("openid.dh_modulus"); m != "" {
-		err =  errors.New("A differing p value is not supported")
+		err = errors.New("A differing p value is not supported")
 		return
 	}
 
 	if gen := f.Get("openid.dh_gen"); gen != "" {
-		err =  errors.New("A differeng g value is not supported")
+		err = errors.New("A differeng g value is not supported")
 		return
 	}
 
 	var (
-		pubkey *big.Int
+		pubkey    *big.Int
 		pubKeyStr string
 	)
 
@@ -56,7 +65,7 @@ func Associate(f url.Values) (kv KeyValue, err error) {
 	bt, err := base64.StdEncoding.DecodeString(pubKeyStr)
 
 	if err != nil {
-		err =  fmt.Errorf("Could not decode publickey base64: %s", err)
+		err = fmt.Errorf("Could not decode publickey base64: %s", err)
 		return
 	}
 
