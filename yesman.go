@@ -214,6 +214,6 @@ func (s Server) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 	case "/login":
 		s.Login.ServeHTTP(rw, rq)
 	case "/forward":
-		s.Login.ServeHTTP(rw, rq)
+		s.Forward.ServeHTTP(rw, rq)
 	}
 }
