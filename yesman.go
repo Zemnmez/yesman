@@ -132,7 +132,7 @@ func Forward(v url.Values) (ov url.Values, err error) {
 	//just say yes.
 
 	log.Println("Got forward, forwarding...")
-	if !strings.HasPrefix(v.Get("openid.return_to"), "http") {
+	if !strings.HasPrefix(v.Get("openid.return_to"), "http://") {
 		err = errors.New("Will not return to non-http URLs.")
 		return
 	}
@@ -156,7 +156,10 @@ func Forward(v url.Values) (ov url.Values, err error) {
 
 	var keys []string = make([]string, 0, len(ov))
 	for k, _ := range ov {
-		keys = append(keys, k)
+		if !strings.HasPrefix(k, "openid.") {
+			continue
+		}
+		keys = append(keys, strings.TrimLeft(k, "openid."))
 	}
 
 	ov.Set("openid.signed", strings.Join(keys, ","))
@@ -185,11 +188,13 @@ func Forward(v url.Values) (ov url.Values, err error) {
 		sigVl[n] = ov.Get(v[0])
 	}
 
-	var mac = make([]byte, 20)
+	var mac = make([]byte, 0, 20)
 	macWriter := hmac.New(sha1.New, a.MacSecret[:])
 	_, err = macWriter.Write(
 		[]byte(sigVl.String()),
 	)
+
+	mac = macWriter.Sum(mac)
 
 	if err != nil {
 		err = fmt.Errorf("Failed to compute MAC: %s", err)
