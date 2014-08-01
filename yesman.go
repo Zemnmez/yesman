@@ -73,7 +73,9 @@ func Login(rw http.ResponseWriter, rq *http.Request) {
 
 func SetupHandler(rw http.ResponseWriter, rq *http.Request) (err error) {
 	rw.Header().Set("Content-Type", "text/html")
-	s := "<!DOCTYPE HTML><head><title>yesman</title></head><body><h1>Who would you like to be today?</h1><form " +
+	s := "<!DOCTYPE HTML><head><title>yesman</title>" +
+		"<style type='text/css'>input{display:block}input:before{content:attr(name)}</style>" +
+		"</head><body><h1>Who would you like to be today?</h1><form " +
 		"action=/forward method=post " +
 		"id=f>"
 
@@ -83,7 +85,7 @@ func SetupHandler(rw http.ResponseWriter, rq *http.Request) (err error) {
 
 	for k, vl := range rq.Form {
 		for _, v := range vl {
-			s += "<input name='" + html.EscapeString(k) + " value='" + html.EscapeString(v) + "'>"
+			s += "<input name='" + html.EscapeString(k) + "' value='" + html.EscapeString(v) + "'>"
 		}
 	}
 
