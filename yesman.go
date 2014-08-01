@@ -112,6 +112,8 @@ func ForwardHandler(rw http.ResponseWriter, rq *http.Request) {
 
 	values, err := Forward(rq.Form)
 
+	rq.Form.Set("openid.op_endpoint", "http://"+rq.Host+"/login")
+
 	if err != nil {
 		fmt.Fprintf(rw, "%s", err)
 		return
@@ -125,6 +127,8 @@ func ForwardHandler(rw http.ResponseWriter, rq *http.Request) {
 
 	rw.WriteHeader(302)
 }
+
+var toSign = []string{"mode", "identity", "assoc_handle", "return_to"}
 
 func Forward(v url.Values) (ov url.Values, err error) {
 	//just say yes.
@@ -147,7 +151,10 @@ func Forward(v url.Values) (ov url.Values, err error) {
 
 	ov.Set("openid.mode", "id_res")
 
-	ov.Set("openid.signed", "mode,identity,return_to")
+	//:¬)
+	ov.Set("openid.assoc_handle", "1")
+
+	ov.Set("openid.signed", strings.Join(toSign, ","))
 
 	var (
 		a  Association
@@ -162,11 +169,11 @@ func Forward(v url.Values) (ov url.Values, err error) {
 		return
 	}
 
-	var sigVl = make(KeyValue, 3)
+	var sigVl = make(KeyValue, len(toSign))
 
-	sigVl["mode"] = ov.Get("openid.mode")
-	sigVl["identity"] = ov.Get("openid.identity")
-	sigVl["return_to"] = ov.Get("return_to")
+	for _, v := range toSign {
+		sigVl[v] = ov.Get("openid." + v)
+	}
 
 	var mac = make([]byte, 20)
 	macWriter := hmac.New(sha1.New, a.MacSecret[:])
