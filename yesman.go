@@ -162,7 +162,7 @@ func Forward(v url.Values) (ov url.Values, err error) {
 		keys = append(keys, strings.TrimLeft(k, "openid."))
 	}
 
-	ov.Set("openid.signed", strings.Join(keys, ","))
+	ov.Set("openid.signed", strings.Join(keys, ",")+",signed")
 
 	var (
 		a  Association
@@ -233,11 +233,11 @@ func (s Server) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 	log.Println(rq.RequestURI, "->", rq.UserAgent(), rq.RemoteAddr)
 
 	switch rq.URL.Path {
-	case "/openid":
-		s.Openid.ServeHTTP(rw, rq)
 	case "/login":
 		s.Login.ServeHTTP(rw, rq)
 	case "/forward":
 		s.Forward.ServeHTTP(rw, rq)
 	}
+
+	s.Openid.ServeHTTP(rw, rq)
 }
