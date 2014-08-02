@@ -20,14 +20,14 @@ import (
 
 type XRDSXml struct {
 	//for pentesting XSS exploits,
-	//defaults to /login.
+	//defaults to /openid/login.
 	LoginURI string
 }
 
 func (x XRDSXml) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 	u := x.LoginURI
 	if u == "" {
-		u = "http://" + rq.Host + "/login"
+		u = "http://" + rq.Host + "/openid/login"
 	}
 
 	io.Copy(
@@ -112,7 +112,7 @@ func ForwardHandler(rw http.ResponseWriter, rq *http.Request) {
 
 	values, err := Forward(rq.Form)
 
-	rq.Form.Set("openid.op_endpoint", "http://"+rq.Host+"/login")
+	rq.Form.Set("openid.op_endpoint", "http://"+rq.Host+"/openid/login")
 
 	if err != nil {
 		fmt.Fprintf(rw, "%s", err)
@@ -238,7 +238,7 @@ func Fallback(rw http.ResponseWriter, rq *http.Request) {
 	<XRD>
 		<Service priority="0">
 			<Type>http://specs.openid.net/auth/2.0/signon</Type>		
-			<URI>http://`+rq.Host+`/login</URI>
+			<URI>http://`+rq.Host+`/openid/login</URI>
 		</Service>
 	</XRD>
 </xrds:XRDS>`))
@@ -247,7 +247,7 @@ func Fallback(rw http.ResponseWriter, rq *http.Request) {
 type Server struct {
 	// /openid endpoint
 	Openid http.Handler
-	// /login endpoint
+	// /openid/login endpoint
 	Login http.Handler
 
 	//forwarding endpoint
@@ -260,7 +260,7 @@ func (s Server) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 	log.Println(rq.RequestURI, "->", rq.UserAgent(), rq.RemoteAddr)
 
 	switch rq.URL.Path {
-	case "/login":
+	case "/openid/login":
 		s.Login.ServeHTTP(rw, rq)
 		return
 	case "/forward":
