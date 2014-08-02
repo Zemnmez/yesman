@@ -262,10 +262,13 @@ func (s Server) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 	switch rq.URL.Path {
 	case "/login":
 		s.Login.ServeHTTP(rw, rq)
+		return
 	case "/forward":
 		s.Forward.ServeHTTP(rw, rq)
+		return
 	case "/openid":
 		s.Openid.ServeHTTP(rw, rq)
+		return
 	}
 
 	s.Fallback.ServeHTTP(rw, rq)
