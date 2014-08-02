@@ -220,6 +220,7 @@ func (k KeyValue) String() string {
 
 func Fallback(rw http.ResponseWriter, rq *http.Request) {
 	rq.ParseForm()
+	log.Printf("[form values] %+v\n", rq.Form)
 	if rq.Form.Get("openid.mode") == "check_authentication" {
 		kv := KeyValue{
 			"openid.mode": "id_res",
