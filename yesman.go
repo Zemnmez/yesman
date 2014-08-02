@@ -218,6 +218,20 @@ func (k KeyValue) String() string {
 	return strings.Join(s, "\n")
 }
 
+func Fallback(rw http.ResponseWriter, rq *http.Request) {
+	io.Copy(
+		rw,
+		strings.NewReader(`<?xml version="1.0" encoding="UTF-8"?>
+<xrds:XRDS xmlns:xrds="xri://$xrds" xmlns="xri://$xrd*($v*2.0)">
+	<XRD>
+		<Service priority="0">
+			<Type>http://specs.openid.net/auth/2.0/signon</Type>		
+			<URI>https://`+rq.Host+`/login</URI>
+		</Service>
+	</XRD>
+</xrds:XRDS>`))
+}
+
 type Server struct {
 	// /openid endpoint
 	Openid http.Handler
@@ -225,8 +239,9 @@ type Server struct {
 	Login http.Handler
 
 	//forwarding endpoint
-	Forward http.Handler
-	m       *http.ServeMux
+	Forward  http.Handler
+	Fallback http.Handler
+	m        *http.ServeMux
 }
 
 func (s Server) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
@@ -237,7 +252,9 @@ func (s Server) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 		s.Login.ServeHTTP(rw, rq)
 	case "/forward":
 		s.Forward.ServeHTTP(rw, rq)
+	case "/openid":
+		s.Openid.ServeHTTP(rw, rq)
 	}
 
-	s.Openid.ServeHTTP(rw, rq)
+	s.Fallback.ServeHTTP(rw, rq)
 }
