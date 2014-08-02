@@ -123,7 +123,7 @@ func NewAssociation(theirKey *big.Int) (a Association, err error) {
 	return
 }
 
-const expiresAfter = 2 * time.Minute
+const expiresAfter = 10 * time.Hour
 
 const publickey = 3
 
