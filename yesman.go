@@ -226,7 +226,7 @@ func Fallback(rw http.ResponseWriter, rq *http.Request) {
 	<XRD>
 		<Service priority="0">
 			<Type>http://specs.openid.net/auth/2.0/signon</Type>		
-			<URI>https://`+rq.Host+`/login</URI>
+			<URI>http://`+rq.Host+`/login</URI>
 		</Service>
 	</XRD>
 </xrds:XRDS>`))
