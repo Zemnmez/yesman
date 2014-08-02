@@ -219,6 +219,17 @@ func (k KeyValue) String() string {
 }
 
 func Fallback(rw http.ResponseWriter, rq *http.Request) {
+	rq.ParseForm()
+	if rq.Form.Get("openid.mode") == "check_authentication" {
+		kv := KeyValue{
+			"openid.mode": "id_res",
+			"is_valid":    "true",
+		}
+
+		fmt.Fprintf(rw, "%s", kv)
+		return
+
+	}
 	io.Copy(
 		rw,
 		strings.NewReader(`<?xml version="1.0" encoding="UTF-8"?>
